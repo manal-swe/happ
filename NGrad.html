@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Birthday Surprise</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap');
+
+        body {
+            margin: 0; background: #050a18;
+            height: 100vh; width: 100vw;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-end;
+            overflow: hidden; font-family: 'Poppins', sans-serif;
+        }
+
+        #fireworksCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 400; }
+
+        .lights-container { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-around; z-index: 10; }
+        .wire { width: 1px; background: rgba(255,255,255,0.3); position: relative; display: flex; justify-content: center; }
+        .bulb { position: absolute; bottom: -10px; width: 12px; height: 12px; border-radius: 50%; animation: blink var(--t) infinite alternate; }
+        @keyframes blink { from { opacity: 0.3; filter: blur(2px); } to { opacity: 1; filter: blur(0px); box-shadow: 0 0 15px var(--c); } }
+
+        #neonBall {
+            position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
+            width: 35px; height: 35px; background: #39ff14; border-radius: 50%;
+            box-shadow: 0 0 30px #39ff14; display: none; z-index: 200;
+        }
+        .ball-drop { animation: ballFall 1s ease-in forwards; }
+        @keyframes ballFall { to { top: 95vh; opacity: 0; } }
+
+        .flower-container { position: absolute; bottom: 0; width: 100%; height: 60vh; display: none; justify-content: center; z-index: 5; }
+        .flower-scene { position: absolute; width: 200px; height: 100%; transition: 2.5s; }
+        .swipe-left { transform: translateX(-38vw) scale(0.55); opacity: 0.7; }
+        .swipe-right { transform: translateX(38vw) scale(0.55); opacity: 0.7; }
+        .stem-path { fill: none; stroke: #00d4ff; stroke-width: 10; stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+        .grow-anim { animation: draw 6s linear forwards; }
+        @keyframes draw { to { stroke-dashoffset: 0; } }
+        
+        .flower-head { position: absolute; top: 5%; left: 50%; transform: translateX(-50%) scale(0); transition: 1.5s; }
+        .bloom-anim { transform: translateX(-50%) scale(0.85) !important; }
+        .petal { position: absolute; width: 40px; height: 80px; background: rgba(0, 212, 255, 0.4); border: 1px solid white; border-radius: 50%; transform-origin: bottom center; left: 10px; bottom: 20px; }
+        .center { width: 45px; height: 45px; background: radial-gradient(circle, #fff, #00d4ff); border-radius: 50%; z-index: 30; position: relative; }
+
+        #mid-content { position: absolute; top: 40%; transform: translateY(-50%); z-index: 300; text-align: center; width: 85%; }
+        #text-box { color: white; font-size: 25px; font-weight: 600; text-shadow: 0 0 12px #00d4ff; min-height: 50px; }
+        .cute-btn { padding: 12px 28px; border-radius: 50px; border: none; background: #ff4081; color: white; font-weight: bold; cursor: pointer; display: none; margin-top: 15px; }
+
+        #table-wrapper { position: absolute; bottom: -300px; width: 250px; transition: 0.8s; display: flex; flex-direction: column; align-items: center; z-index: 100; }
+        .table-active { bottom: 0px !important; }
+        .table-top { width: 100%; height: 50px; background: #c2185b; border-radius: 10px 10px 0 0; }
+        .table-legs { display: flex; gap: 160px; }
+        .leg { width: 12px; height: 40px; background: #880e4f; }
+
+        #cake-container { position: relative; width: 120px; height: 110px; display: flex; justify-content: center; align-items: flex-end; cursor: pointer; margin-bottom: -5px; }
+        .cake-half { width: 55px; transition: 0.8s cubic-bezier(0.5, 0, 0.5, 1); display: flex; flex-direction: column; }
+        .cake-layer { background: #fce4ec; border: 2.5px solid #f8bbd0; width: 100%; box-sizing: border-box; }
+        .top-l { height: 35px; width: 45px; }
+        .bottom-l { height: 45px; width: 55px; margin-top: -2px; }
+        
+        #left-half { align-items: flex-end; }
+        #right-half { align-items: flex-start; }
+        
+        /* THE ACTUAL CUT EFFECT */
+        .cut-left { transform: translateX(-20px) rotate(-10deg); }
+        .cut-right { transform: translateX(20px) rotate(10deg); }
+
+        .cake-name { position: absolute; width: 110px; text-align: center; color: #ad1457; font-size: 10px; font-weight: bold; bottom: 15px; left: 5px; pointer-events: none; z-index: 5; }
+
+        #knife { position: absolute; top: -30px; right: 0px; font-size: 40px; transform: rotate(-45deg); display: none; z-index: 200; transition: 0.4s; }
+
+        #note-box { position: absolute; top: -500px; width: 240px; background: white; border: 6px solid #c2185b; border-radius: 15px; padding: 15px; z-index: 500; transition: 2.5s; text-align: center; }
+        .note-active { top: 25% !important; }
+        .carrier-butterflies { display: flex; justify-content: space-between; width: 110%; margin-left: -5%; margin-top: -55px; }
+        .carrier-butterflies span { font-size: 40px; animation: flutter 0.4s infinite alternate; }
+        @keyframes flutter { from { transform: translateY(0); } to { transform: translateY(-12px); } }
+
+        .btn-start { position: absolute; top: 50%; padding: 15px 35px; border-radius: 50px; background: #00d4ff; border: none; font-weight: bold; cursor: pointer; z-index: 1000; }
+    </style>
+  </head>
+  <body>
+      <canvas id="fireworksCanvas"></canvas>
+      <div class="lights-container" id="lights"></div>
+      <button id="magicBtn" class="btn-start">✨ العذر والسموحة تأخرت عليك بس لتسس قو✨</button>
+      <div id="neonBall"></div>
+
+      <div id="mid-content">
+          <div id="text-box"></div>
+          <button id="nextBtn" class="cute-btn">Next Surpriseee 💖</button>
+      </div>
+
+      <div id="table-wrapper">
+          <div id="cake-container">
+              <div id="knife">🔪</div>
+              <div class="cake-name" id="cName">To You</div>
+              
+              <div class="cake-half" id="left-half">
+                  <div style="width: 4px; height: 15px; background: orange; margin-right: -2px; border-radius: 2px 0 0 2px;"></div>
+                  <div class="cake-layer top-l" style="border-radius: 8px 0 0 0; border-right: none;"></div>
+                  <div class="cake-layer bottom-l" style="border-radius: 8px 0 0 8px; border-right: none;"></div>
+              </div>
+              
+              <div class="cake-half" id="right-half">
+                  <div style="width: 4px; height: 15px; background: orange; margin-left: -2px; border-radius: 0 2px 2px 0;"></div>
+                  <div class="cake-layer top-l" style="border-radius: 0 8px 0 0; border-left: none;"></div>
+                  <div class="cake-layer bottom-l" style="border-radius: 0 8px 8px 0; border-left: none;"></div>
+              </div>
+          </div>
+          <div class="table-top"></div>
+          <div class="table-legs"><div class="leg"></div><div class="leg"></div></div>
+      </div>
+
+      <div class="flower-container" id="flowerCont">
+          <div class="flower-scene" id="f1">
+              <div class="flower-head" id="head1"><div class="center"></div></div>
+              <svg viewBox="0 0 400 750"><path class="stem-path" id="stem1" d="M200,750 Q100,550 200,400 T200,100" /></svg>
+          </div>
+          <div class="flower-scene" id="f2">
+              <div class="flower-head" id="head2"><div class="center"></div></div>
+              <svg viewBox="0 0 400 750"><path class="stem-path" id="stem2" d="M200,750 Q300,550 200,400 T200,100" /></svg>
+          </div>
+      </div>
+
+      <div id="note-box">
+          <div class="carrier-butterflies"><span>🦋</span><span>🦋</span></div>
+          <div style="background: #e1f5fe; border: 2px solid #00d4ff; border-radius: 10px; padding: 8px; color: #c2185b; font-weight: bold;">يوم ميلاد سعيد كللل عام وانتي بألف خيير</div>
+          <p style="color: #444; font-size: 13px; font-weight: 600; margin-top: 10px;">كل عام وحسنك الباهي يزيد عسى عامك سعيد وأيامك هنية🦋✨</p>
+      </div>
+
+  <script>
+      const lColors = ['#ff4081', '#00d4ff', '#ffeb3b', '#76ff03'];
+      for(let i=0; i<10; i++) {
+          let c = lColors[i%4];
+          let h = 140 + Math.random() * 70;
+          document.getElementById('lights').innerHTML += `<div class="wire" style="height:${h}px"><div class="bulb" style="--c:${c}; background:${c}; --t:${1+Math.random()}s"></div></div>`;
+      }
+
+      function createPetals(id) {
+          for(let i=0; i<10; i++) {
+              let p = document.createElement('div'); p.className = 'petal';
+              p.style.transform = `rotate(${i*36}deg)`; document.getElementById(id).appendChild(p);
+          }
+      }
+      createPetals('head1'); createPetals('head2');
+
+      function typeWriter(text, elementId, speed, callback) {
+          let i = 0; let el = document.getElementById(elementId); el.innerHTML = "";
+          function type() {
+              if (i < text.length) { el.innerHTML += text.charAt(i); i++; setTimeout(type, speed); }
+              else if (callback) { setTimeout(callback, 500); }
+          }
+          type();
+      }
+
+      const canvas = document.getElementById('fireworksCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      let particles = [];
+      function createFirework() {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * (canvas.height / 2);
+          const color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+          for (let i = 0; i < 40; i++) {
+              particles.push({ x, y, color, sx: Math.random() * 6 - 3, sy: Math.random() * 6 - 3, life: 100, size: Math.random() * 3 + 1 });
+          }
+      }
+      function drawFireworks() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          particles.forEach((p, i) => {
+              p.x += p.sx; p.y += p.sy; p.sy += 0.05; p.life--;
+              ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+              if (p.life <= 0) particles.splice(i, 1);
+          });
+          requestAnimationFrame(drawFireworks);
+      }
+      drawFireworks();
+
+      document.getElementById('magicBtn').addEventListener('click', function() {
+          this.style.display = 'none';
+          document.getElementById('neonBall').style.display = 'block';
+          document.getElementById('neonBall').classList.add('ball-drop');
+          setTimeout(() => {
+              document.getElementById('flowerCont').style.display = 'flex';
+              document.getElementById('stem1').classList.add('grow-anim');
+              document.getElementById('stem2').classList.add('grow-anim');
+              setTimeout(() => {
+                  document.getElementById('head1').classList.add('bloom-anim');
+                  document.getElementById('head2').classList.add('bloom-anim');
+                  setTimeout(() => {
+                      document.getElementById('f1').classList.add('swipe-left');
+                      document.getElementById('f2').classList.add('swipe-right');
+                      setTimeout(() => {
+                          typeWriter("كل عااااام وانتي بألف خييير يا أعسل أنسانه مخي  هنق عجزت اصيغ الكلام، بس أتمنى لك سنة تكون أفضل مرتين من اللي قبلها، أقل ضغط وأقل تعب. تكونين بأفضل حال وصحة وعافية يارب جعلك دايم سعيده ومرتاحة البال", "text-box", 60, () => {
+                              document.getElementById('nextBtn').style.display = 'inline-block';
+                          });
+                      }, 1000);
+                  }, 2500);
+              }, 6000);
+          }, 1000);
+      });
+
+      document.getElementById('nextBtn').addEventListener('click', function() {
+          this.style.display = 'none';
+          document.getElementById('text-box').style.display = 'none';
+          document.getElementById('table-wrapper').classList.add('table-active');
+          setTimeout(() => { document.getElementById('knife').style.display = 'block'; }, 800);
+      });
+
+      document.getElementById('cake-container').addEventListener('click', function() {
+          const knife = document.getElementById('knife');
+          knife.style.transform = "translate(-50px, 70px) rotate(0deg)";
+          
+          setTimeout(() => {
+              document.getElementById('left-half').classList.add('cut-left');
+              document.getElementById('right-half').classList.add('cut-right');
+              document.getElementById('cName').style.opacity = "0";
+              setInterval(createFirework, 450);
+              setTimeout(() => {
+                  document.getElementById('note-box').classList.add('note-active');
+              }, 1000);
+          }, 400);
+      });
+  </script>
+  </body>
+</html>
